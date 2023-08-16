@@ -1,6 +1,7 @@
 package tests;
 
 import Pages.BoardPage;
+import Pages.CardPage;
 import Pages.ListPage;
 import Utils.RequestBuilderUtil;
 import io.restassured.RestAssured;
@@ -36,11 +37,12 @@ public class TrelloTest {
                 .statusCode(200)
                 .extract()
                 .response();
+        assertFalse(createBoardResponse.jsonPath().getString("id").isEmpty(), "ID field is empty for " + boardPage.getCreateURL());
         String boardId = createBoardResponse.jsonPath().getString("id");
+        boardPage.setBoardID(boardId);
 
         // create a new list
-        ListPage listPage = new ListPage("New List For Testing",boardId);
-
+        ListPage listPage = new ListPage("New List For Testing", boardPage.getBoardID());
         listPage.setParamsDefault();
         requestBuilderUtil = new RequestBuilderUtil(listPage.getCreateURL(), "POST", listPage.getRequestBody(), listPage.getParams());
         Response createList = requestBuilderUtil.sendRequest();
@@ -50,38 +52,40 @@ public class TrelloTest {
                 .statusCode(200)
                 .extract()
                 .response();
-
+        assertFalse(createListResponse.jsonPath().getString("id").isEmpty(), "ID field is empty for" + listPage.getCreateURL());
         String listID = createListResponse.jsonPath().getString("id");
 
         // create 2 cards
+        CardPage cardPage;
         ArrayList<String> cardIDs = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
-            Response createCardResponse = given()
-                    .queryParam("name", "Card-" + i)
-                    .queryParam("key", getApiKey())
-                    .queryParam("token", getApiToken())
-                    .queryParam("idList", listID)
-                    .body(boardPage.getRequestBody())
-                    .when()
-                    .post("/1/cards")
+            // init card page and setting params
+            cardPage = new CardPage("Card-" + i);
+            cardPage.setParamsDefault();
+            cardPage.addParameter("idList", listID);
+            requestBuilderUtil = new RequestBuilderUtil(cardPage.getCreateURL(), "POST", cardPage.getRequestBody(), cardPage.getParams());
+            Response createCard = requestBuilderUtil.sendRequest();
+
+            Response createCardResponse = createCard
                     .then()
                     .statusCode(200)
                     .extract()
                     .response();
-
-            assertFalse(createCardResponse.jsonPath().getString("id").isEmpty(), "ID field is empty");
+            assertFalse(createCardResponse.jsonPath().getString("id").isEmpty(), "ID field is empty for " + cardPage.getCreateURL());
             cardIDs.add(createCardResponse.jsonPath().getString("id"));
         }
 
         // update a card which is selected random
         int randomNumber = getRandomNumber(cardIDs.size());
-        Response updateCardResponse = given()
-                .queryParam("desc", "updated.")
-                .queryParam("key", getApiKey())
-                .queryParam("token", getApiToken())
-                .body(boardPage.getRequestBody())
-                .when()
-                .put("/1/cards/" + cardIDs.get(randomNumber))
+
+        cardPage = new CardPage("Card-Updated");
+        cardPage.setCardID(cardIDs.get(randomNumber));
+        cardPage.setParamsDefault();
+        cardPage.addParameter("desc", "updated.");
+        requestBuilderUtil = new RequestBuilderUtil(cardPage.getUpdateURL(), "PUT", cardPage.getRequestBody(), cardPage.getParams());
+        Response updateCard = requestBuilderUtil.sendRequest();
+
+        Response updateCardResponse = updateCard
                 .then()
                 .statusCode(200)
                 .extract()
@@ -89,12 +93,13 @@ public class TrelloTest {
 
         // delete all the cards
         for (String cardID : cardIDs) {
-            Response deleteCardResponse = given()
-                    .queryParam("key", getApiKey())
-                    .queryParam("token", getApiToken())
-                    .body(boardPage.getRequestBody())
-                    .when()
-                    .delete("/1/cards/" + cardID)
+            cardPage = new CardPage();
+            cardPage.setCardID(cardID);
+            cardPage.setParamsDefault();
+            requestBuilderUtil = new RequestBuilderUtil(cardPage.getDeleteURL(), "DELETE", cardPage.getRequestBody(), cardPage.getParams());
+            Response deleteCard = requestBuilderUtil.sendRequest();
+
+            Response deleteCardResponse = deleteCard
                     .then()
                     .statusCode(200)
                     .extract()
