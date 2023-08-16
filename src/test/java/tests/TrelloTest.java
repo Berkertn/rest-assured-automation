@@ -6,15 +6,10 @@ import Pages.ListPage;
 import Utils.RequestBuilderUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
-import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
-
-import static Data.UserInfo.getApiKey;
-import static Data.UserInfo.getApiToken;
 import static Utils.RandomUtil.getRandomNumber;
-import static io.restassured.RestAssured.given;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class TrelloTest {
