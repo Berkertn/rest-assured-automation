@@ -64,13 +64,19 @@ public abstract class BasePage {
 
     public void setParamsDefault() {
         // default parameters
-        if (name != null) {params.put("name", name);}
+        if (name != null) {
+            params.put("name", name);
+        }
         params.put("key", apiKey);
         params.put("token", apiToken);
     }
 
     public void addParameter(String key, String value) {
         params.put(key, value);
+    }
+
+    public void deleteParameter(String key) {
+        params.remove(key);
     }
 
     public HashMap<String, String> getParams() {
