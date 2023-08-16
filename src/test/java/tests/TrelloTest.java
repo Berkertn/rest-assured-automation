@@ -1,11 +1,13 @@
 package tests;
 
+import Pages.BoardPage;
+import Utils.RequestBuilderUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
 
-import java.util.ArrayList;
+import java.util.*;
 
 import static Data.UserInfo.getApiKey;
 import static Data.UserInfo.getApiToken;
@@ -16,17 +18,19 @@ import static org.junit.jupiter.api.Assertions.*;
 public class TrelloTest {
     @Test
     public void trelloEndToEndTest() {
+        // declare base URL
         RestAssured.baseURI = "https://api.trello.com";
-        JSONObject requestBody = new JSONObject();
-        requestBody.put("", "");
+
+        // get instant for board
+        BoardPage boardPage = new BoardPage("New Board For Testing");
+
+
         //create a new board
-        Response createBoardResponse = given()
-                .queryParam("name", "New Board For Testing")
-                .queryParam("key", getApiKey())
-                .queryParam("token", getApiToken())
-                .body(requestBody.toString())
-                .when()
-                .post("/1/boards")
+        boardPage.setParamsDefault();
+        RequestBuilderUtil requestBuilderUtil = new RequestBuilderUtil(boardPage.getCreateURL(), "POST", boardPage.getRequestBody(), boardPage.getParams());
+        Response createBoard = requestBuilderUtil.sendRequest();
+
+        Response createBoardResponse = createBoard
                 .then()
                 .statusCode(200)
                 .extract()
@@ -39,7 +43,7 @@ public class TrelloTest {
                 .queryParam("name", "New List For Testing")
                 .queryParam("key", getApiKey())
                 .queryParam("token", getApiToken())
-                .body(requestBody.toString())
+                .body(boardPage.getRequestBody())
                 .when()
                 .post(String.format("/1/boards/%s/lists", boardId))
                 .then()
@@ -56,7 +60,7 @@ public class TrelloTest {
                     .queryParam("key", getApiKey())
                     .queryParam("token", getApiToken())
                     .queryParam("idList", listID)
-                    .body(requestBody.toString())
+                    .body(boardPage.getRequestBody())
                     .when()
                     .post("/1/cards")
                     .then()
@@ -74,7 +78,7 @@ public class TrelloTest {
                 .queryParam("desc", "updated.")
                 .queryParam("key", getApiKey())
                 .queryParam("token", getApiToken())
-                .body(requestBody.toString())
+                .body(boardPage.getRequestBody())
                 .when()
                 .put("/1/cards/" + cardIDs.get(randomNumber))
                 .then()
@@ -87,7 +91,7 @@ public class TrelloTest {
             Response deleteCardResponse = given()
                     .queryParam("key", getApiKey())
                     .queryParam("token", getApiToken())
-                    .body(requestBody.toString())
+                    .body(boardPage.getRequestBody())
                     .when()
                     .delete("/1/cards/" + cardID)
                     .then()
@@ -100,7 +104,7 @@ public class TrelloTest {
         Response deleteBoardResponse = given()
                 .queryParam("key", getApiKey())
                 .queryParam("token", getApiToken())
-                .body(requestBody.toString())
+                .body(boardPage.getRequestBody())
                 .when()
                 .delete("/1/boards/" + boardId)
                 .then()
