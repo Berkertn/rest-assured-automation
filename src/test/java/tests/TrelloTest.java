@@ -54,6 +54,7 @@ public class TrelloTest {
                 .response();
         assertFalse(createListResponse.jsonPath().getString("id").isEmpty(), "ID field is empty for" + listPage.getCreateURL());
         String listID = createListResponse.jsonPath().getString("id");
+        listPage.setListID(listID);
 
         // create 2 cards
         CardPage cardPage;
@@ -62,7 +63,7 @@ public class TrelloTest {
             // init card page and setting params
             cardPage = new CardPage("Card-" + i);
             cardPage.setParamsDefault();
-            cardPage.addParameter("idList", listID);
+            cardPage.addParameter("idList", listPage.getListID());
             requestBuilderUtil = new RequestBuilderUtil(cardPage.getCreateURL(), "POST", cardPage.getRequestBody(), cardPage.getParams());
             Response createCard = requestBuilderUtil.sendRequest();
 
