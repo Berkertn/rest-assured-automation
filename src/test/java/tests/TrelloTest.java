@@ -61,7 +61,7 @@ public class TrelloTest {
         ArrayList<String> cardIDs = new ArrayList<>();
         for (int i = 0; i < 2; i++) {
             // init card page and setting params
-            cardPage = new CardPage("Card-" + i);
+            cardPage = new CardPage("Card-" + i + 1);
             cardPage.setParamsDefault();
             cardPage.addParameter("idList", listPage.getListID());
             requestBuilderUtil = new RequestBuilderUtil(cardPage.getCreateURL(), "POST", cardPage.getRequestBody(), cardPage.getParams());
@@ -108,12 +108,12 @@ public class TrelloTest {
         }
 
         // delete the board
-        Response deleteBoardResponse = given()
-                .queryParam("key", getApiKey())
-                .queryParam("token", getApiToken())
-                .body(boardPage.getRequestBody())
-                .when()
-                .delete("/1/boards/" + boardId)
+        boardPage.setParamsDefault();
+        boardPage.deleteParameter("name");
+        requestBuilderUtil = new RequestBuilderUtil(boardPage.getDeleteURL(), "DELETE", boardPage.getRequestBody(), cardPage.getParams());
+        Response deleteBoard = requestBuilderUtil.sendRequest();
+
+        Response deleteBoardResponse = deleteBoard
                 .then()
                 .statusCode(200)
                 .extract()
