@@ -1,6 +1,7 @@
 package tests;
 
 import Pages.BoardPage;
+import Pages.ListPage;
 import Utils.RequestBuilderUtil;
 import io.restassured.RestAssured;
 import io.restassured.response.Response;
@@ -38,18 +39,18 @@ public class TrelloTest {
         String boardId = createBoardResponse.jsonPath().getString("id");
 
         // create a new list
+        ListPage listPage = new ListPage("New List For Testing",boardId);
 
-        Response createListResponse = given()
-                .queryParam("name", "New List For Testing")
-                .queryParam("key", getApiKey())
-                .queryParam("token", getApiToken())
-                .body(boardPage.getRequestBody())
-                .when()
-                .post(String.format("/1/boards/%s/lists", boardId))
+        listPage.setParamsDefault();
+        requestBuilderUtil = new RequestBuilderUtil(listPage.getCreateURL(), "POST", listPage.getRequestBody(), listPage.getParams());
+        Response createList = requestBuilderUtil.sendRequest();
+
+        Response createListResponse = createList
                 .then()
                 .statusCode(200)
                 .extract()
                 .response();
+
         String listID = createListResponse.jsonPath().getString("id");
 
         // create 2 cards
