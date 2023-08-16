@@ -29,6 +29,13 @@ public abstract class BasePage {
         requestBody = new JSONObject();
     }
 
+    public BasePage() {
+        params = new HashMap<>();
+        apiToken = getApiToken();
+        apiKey = getApiKey();
+        requestBody = new JSONObject();
+    }
+
     public void setRequestBody(String key, String value) {
         this.requestBody = requestBody.put(key, value);
     }
@@ -57,7 +64,7 @@ public abstract class BasePage {
 
     public void setParamsDefault() {
         // default parameters
-        params.put("name", name);
+        if (name != null) {params.put("name", name);}
         params.put("key", apiKey);
         params.put("token", apiToken);
     }
