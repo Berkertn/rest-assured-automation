@@ -12,7 +12,7 @@ import java.util.*;
 import static Utils.RandomUtil.getRandomNumber;
 import static org.junit.jupiter.api.Assertions.*;
 
-public class TrelloTest {
+public class TrelloApiTest {
     @Test
     public void trelloEndToEndTest() {
         // declare base URL
